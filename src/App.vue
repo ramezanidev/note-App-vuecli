@@ -14,7 +14,7 @@
     </div>
     <div class="col-7 col-md-8 col-lg-10 mt-2 ms-2">
       <div>
-        <form>
+        <form @submit.prevent="searchNote">
           <div class="my-0">
             <label class="col-form-label" for="search-note"></label>
             <input
@@ -55,7 +55,7 @@ export default {
   data() {
     return {
       Notes: (JSON.parse(localStorage.getItem("note") ?? null) || []).filter(e=>{if(!(!e.text&&!e.title)){return e}}),
-      searchNotes:[],
+      searchNotes:'',
       searchNoteValue:''
     };
   },
@@ -86,14 +86,15 @@ export default {
     },
     searchNote: function () {
       if(this.searchNoteValue){
-        this.searchNotes = this.Notes
-        this.Notes = this.Notes.filter(e=>{
+        this.searchNotes = this.searchNotes || this.Notes
+        this.Notes = this.searchNotes.filter(e=>{
           if(e.title.includes(this.searchNoteValue)){
             return e
           }
         })
       }else{
-          this.Notes = this.searchNotes
+          this.Notes = this.searchNotes || this.Notes
+          this.searchNotes=''
       }
     },
     getDate: function(){

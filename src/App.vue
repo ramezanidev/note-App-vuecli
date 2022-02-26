@@ -1,15 +1,13 @@
 <template>
   <div class="row" id="app">
-    <div
-      class="col-3 col-md-2 col-lg-1 mt-2 border-right d-flex flex-column align-items-center"
-    >
+    <div class="col-3 col-md-2 col-lg-1 mt-2 border-right d-flex flex-column align-items-center">
       <p class="lead">Docket</p>
       <button
         class="d-flex align-items-center justify-content-center"
         id="add-note"
         @click="addNewNote"
       >
-        <img alt="" src="icons/plus.png" style="max-width: 90%" />
+        <img alt src="icons/plus.png" style="max-width: 90%" />
       </button>
     </div>
     <div class="col-7 col-md-8 col-lg-10 mt-2 ms-2">
@@ -30,8 +28,8 @@
         <h1 class="mt-3">Notes</h1>
       </div>
       <div class="row text-center justify-content-center note-container">
-        <noteApp
-          v-for="note in Notes"
+        <Note
+          v-for="note in notes"
           :key="note.id"
           :noteObj="note"
           :newNote="note.text ? true : false"
@@ -43,79 +41,75 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+import Note from "./components/note.vue";
 
-<script>
-import noteApp from "./components/noteApp.vue";
+const notes = ref([]);
+const searchNotes = ref('');
+const searchNoteValue = ref('');
 
-export default {
-  name: "App",
-  components: {
-    noteApp,
-  },
-  data() {
-    return {
-      Notes: (JSON.parse(localStorage.getItem("note") ?? null) || []).filter(e=>{if(!(!e.text&&!e.title)){return e}}),
-      searchNotes:'',
-      searchNoteValue:''
-    };
-  },
-  methods: {
-    addNewNote: function () {
-      this.Notes.unshift({
-        title: "",
-        text: "",
-        time: this.getDate().time,
-        date: this.getDate().Date,
-        id: Math.random()*100000,
-      });
-      this._AddlocalStorage();
-    },
-    editNote: function(e){
-      this.Notes.map(note=>{
-        if(note.id === e.id){note=e;this._AddlocalStorage()}
-      })
-    },
-    delNote: function (e) {
-      this.Notes = this.Notes.filter(note=>{
-        if(note.id !== e.id){return note}
-      })
-      this._AddlocalStorage();
-    },
-    _AddlocalStorage: function () {
-      localStorage.setItem("note", JSON.stringify(this.Notes));
-    },
-    searchNote: function () {
-      if(this.searchNoteValue){
-        this.searchNotes = this.searchNotes || this.Notes
-        this.Notes = this.searchNotes.filter(e=>{
-          if(e.title.includes(this.searchNoteValue)){
-            return e
-          }
-        })
-      }else{
-          this.Notes = this.searchNotes || this.Notes
-          this.searchNotes=''
+const localNotes = JSON.parse(localStorage.getItem("note") ?? null) || []
+// removed empty notes
+notes.value = localNotes.filter(e => { if (!(!e.text && !e.title)) { return e } })
+
+
+const addNewNote = () => {
+  notes.value.unshift({
+    title: "",
+    text: "",
+    time: getDate().time,
+    date: getDate().Date,
+    id: Math.random() * 100000,
+  });
+  _AddlocalStorage();
+}
+
+const editNote = (e) => {
+  notes.value.map(note => {
+    if (note.id === e.id) { note = e; _AddlocalStorage() }
+  })
+}
+
+const delNote = (e) => {
+notes.value = notes.value.filter(note => {
+    if (note.id !== e.id) { return note }
+  })
+  _AddlocalStorage();
+}
+
+const _AddlocalStorage = () => {
+  localStorage.setItem("note", JSON.stringify(notes.value));
+}
+
+const searchNote = () => {
+  if (searchNoteValue.value) {
+    searchNotes.value = searchNotes.value || notes.value
+    notes.value = searchNotes.value.filter(e => {
+      if (e.title.includes(searchNoteValue.value)) {
+        return e
       }
-    },
-    getDate: function(){
-        const now = new Date();
-        const options = {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        };
-        const hour = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const time = `${hour}:${minutes}`;
-        const formattedDate = new Intl.DateTimeFormat('en-US', options).format(now);
-        return {
-          Date:formattedDate,
-          time:time
-        }
-    }
-  },
-};
+    })
+  } else {
+    notes.value = searchNotes.value || notes.value
+    searchNotes.value = ''
+  }
+}
+
+const getDate = () => {
+  const now = new Date();
+  const options = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  };
+  const hour = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const time = `${hour}:${minutes}`;
+  const formattedDate = new Intl.DateTimeFormat('en-US', options).format(now);
+  return {
+    Date: formattedDate,
+    time: time
+  }
+}
 </script>
-
-
-
